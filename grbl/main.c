@@ -24,6 +24,7 @@
 
 // Declare system global variable structure
 system_t sys; 
+uint16_t key;
 
 
 int main(void)
@@ -33,6 +34,8 @@ int main(void)
   settings_init(); // Load Grbl settings from EEPROM
   stepper_init();  // Configure stepper pins and interrupt timers
   system_init();   // Configure pinout pins and pin-change interrupt
+
+  pendant_init();  // Configure pendant.
   
   memset(&sys, 0, sizeof(system_t));  // Clear all system variables
   sys.abort = true;   // Set abort to complete initialization
@@ -58,6 +61,17 @@ int main(void)
   // will return to this loop to be cleanly re-initialized.
   for(;;) {
 
+    // check pendant 
+    key = get_key();
+    switch (key)
+    {
+        case KEY_IDLE:
+        break;
+	default:
+	break;
+    }
+    
+    //
     // TODO: Separate configure task that require interrupts to be disabled, especially upon
     // a system abort and ensuring any active interrupts are cleanly reset.
   

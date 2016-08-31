@@ -20,8 +20,22 @@
 #ifndef pendant_h
 #define pendant_h
 
-#include "grbl.h"
+/* Which analog pin we want to read from.  The pins are labeled "ADC0"
+   "ADC1" etc on the pinout in the data sheet.  In this case ADC_PIN
+   being 0 means we want to use ADC0.  On the ATmega328P this is also
+   the same as pin PC0 */
 
+#define ADC_PIN    4
 
+#define KEY_IDLE   0
+#define KEY_X_L    1
+#define KEY_X_R    2
+#define KEY_Y_F    3
+#define KEY_Y_B    4
+#define KEY_Z_U    5
+#define KEY_Z_D    6
+
+void  pendant_init(void);
+char  get_key(void);
 
 #endif
