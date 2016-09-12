@@ -19,25 +19,24 @@
 
 #include "grbl.h"
 
+
 static uint16_t adc_read(uint8_t adcx);
-static char val2key(uint16_t input);
+static uint8_t val2key(uint16_t input);
 
 // do some initialization
-void pendant_init(void)
+void pendant_init()
 {
     return;
 }
 
-static char oldkey = KEY_IDLE;
-char get_key(void) 
+static uint8_t oldkey = KEY_IDLE;
+uint8_t get_key() 
 {
-    char key = 0;
+    uint8_t key = 0;
     key = val2key(adc_read(ADC_PIN));   // convert into key press	
     if (key != oldkey)	          // if keypress is detected
     {
-#if 0
-        delay(50);                // wait for debounce time
-#endif
+        _delay_ms(50.0);                // wait for debounce time
         key = val2key(adc_read(ADC_PIN));  // read the value from the sensor  
     }
     oldkey = key;
@@ -45,15 +44,16 @@ char get_key(void)
 }
 
 // Convert ADC value to direction
-static char val2key(uint16_t input)
-{   
-    if       (input < 100) return KEY_IDLE;
+static uint8_t val2key(uint16_t input)
+{  
+
+    if       (input < 100) return KEY_ERROR;
     else  if (input < 300) return KEY_X_L;
-    else  if (input < 500) return KEY_X_R;
-    else  if (input < 700) return KEY_Y_F;
-    else  if (input < 900) return KEY_Y_B;    
-    else  if (input < 700) return KEY_Z_U;
-    else  if (input < 900) return KEY_Z_D;    
+    else  if (input < 400) return KEY_X_R;
+    else  if (input < 550) return KEY_Y_F;
+    else  if (input < 700) return KEY_Y_B;    
+    else  if (input < 850) return KEY_Z_D;
+    else  if (input <1000) return KEY_Z_U;    
     else  return KEY_IDLE;
 }
 
@@ -65,19 +65,20 @@ static char val2key(uint16_t input)
 */
 static uint16_t adc_read(uint8_t adcx)
 {
-    /* Enable the ADC */
-    ADCSRA |= _BV(ADEN);
+    uint8_t  low, high;
+    uint16_t val;
+
+    /* Enable the ADC  and the set prescale betwenen system clock and ADC clock */
+    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
 
     /* adcx is the analog pin we want to use.  ADMUX's first few bits are
        the binary representations of the numbers of the pins so we can
        just 'OR' the pin's number with ADMUX to select that pin.
        We first zero the four bits by setting ADMUX equal to its higher
        four bits. */
-    /*
-    ADMUX &= 0xF0;
-    */
-    ADMUX &= 0x40;
-    ADMUX |= adcx;
+  
+    // arduino defualt use AREF
+    ADMUX = _BV(REFS0) | ( adcx & 0x0F );
 
     /* This starts the conversion. */
     ADCSRA |= _BV(ADSC);
@@ -87,8 +88,24 @@ static uint16_t adc_read(uint8_t adcx)
        set above, to see if it is still set.  This bit is automatically
        reset (zeroed) when the conversion is ready so if we do this in
        a loop the loop will just go until the conversion is ready. */
+#if 1
     while ( (ADCSRA & _BV(ADSC)) );
+#else
+    // an alternative way to wait for ADC, same result with above line
+    while ( !(ADCSRA & _BV(ADIF)) );
+    ADCSRA |= _BV(ADIF);
+#endif
 
-    /* Finally, we return the converted value to the calling function. */
-    return ADC;
+    // we have to read ADCL first; doing so locks both ADCL
+    // and ADCH until ADCH is read.  reading ADCL second would
+    // cause the results of each conversion to be discarded,
+    // as ADCL and ADCH would be locked when it completed.
+    low  = ADCL;
+    high = ADCH;
+
+    val = (high << 8) | low;
+
+    /* Frinally, we return the converted value to the calling function. */
+    return val;
 }
+

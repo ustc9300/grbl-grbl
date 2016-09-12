@@ -36,6 +36,9 @@
 // them as they complete. It is also responsible for finishing the initialization procedures.
 void protocol_main_loop();
 
+// Checks pendant actions.
+void protocol_execute_pendant();
+
 // Checks and executes a realtime command at various stop points in main program
 void protocol_execute_realtime();
 

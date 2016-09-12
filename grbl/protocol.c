@@ -34,7 +34,8 @@ static char line[LINE_BUFFER_SIZE]; // Line to be executed. Zero-terminated.
 // incoming streaming g-code blocks, this also directs and executes Grbl internal commands,
 // such as settings, initiating the homing cycle, and toggling switch states.
 static void protocol_execute_line(char *line) 
-{      
+{
+
   protocol_execute_realtime(); // Runtime command check point.
   if (sys.abort) { return; } // Bail to calling function upon system abort  
 
@@ -163,13 +164,65 @@ void protocol_main_loop()
     protocol_auto_cycle_start();
 
     protocol_execute_realtime();  // Runtime command check point.
+
+    protocol_execute_pendant();   // check pendant actions.
+
     if (sys.abort) { return; } // Bail to main() program loop to reset system.
-              
+
   }
   
   return; /* Never reached */
 }
 
+// Roy's test code for his pendant
+void protocol_execute_pendant()
+{
+    uint8_t key = get_key();
+#if 0
+    printString("A chance to check pendant\n");
+#endif
+
+    switch (key)
+    {
+       case KEY_X_L:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1X-1.0");
+       break;
+       case KEY_X_R:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1X1.0");
+       break;
+       case KEY_Y_F:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1Y-1.0");
+       break;
+       case KEY_Y_B:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1Y1.0");
+       break;
+       case KEY_Z_U:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1Z-1.0");
+       break;
+       case KEY_Z_D:
+       protocol_execute_line("G91F60");
+       protocol_execute_line("G1Z1.0");
+       break;
+       case KEY_IDLE:
+#if 0
+       printString("KEY_IDLE\n");
+#endif
+       break;
+       case KEY_ERROR:
+#if 0
+       printString("KEY_ERROR\n");
+#endif
+       break;
+       default:
+       break;
+    }
+    return;
+}
 
 // Executes run-time commands, when required. This is called from various check points in the main
 // program, primarily where there may be a while loop waiting for a buffer to clear space or any

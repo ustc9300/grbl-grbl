@@ -24,8 +24,6 @@
 
 // Declare system global variable structure
 system_t sys; 
-uint16_t key;
-
 
 int main(void)
 {
@@ -61,16 +59,6 @@ int main(void)
   // will return to this loop to be cleanly re-initialized.
   for(;;) {
 
-    // check pendant 
-    key = get_key();
-    switch (key)
-    {
-        case KEY_IDLE:
-        break;
-	default:
-	break;
-    }
-    
     //
     // TODO: Separate configure task that require interrupts to be disabled, especially upon
     // a system abort and ensuring any active interrupts are cleanly reset.

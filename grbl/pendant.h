@@ -25,7 +25,7 @@
    being 0 means we want to use ADC0.  On the ATmega328P this is also
    the same as pin PC0 */
 
-#define ADC_PIN    4
+#define ADC_PIN    5
 
 #define KEY_IDLE   0
 #define KEY_X_L    1
@@ -34,8 +34,9 @@
 #define KEY_Y_B    4
 #define KEY_Z_U    5
 #define KEY_Z_D    6
+#define KEY_ERROR  7
 
-void  pendant_init(void);
-char  get_key(void);
+void    pendant_init();
+uint8_t get_key();
 
 #endif
